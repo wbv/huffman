@@ -50,10 +50,11 @@ Byte: 0      1    2:5      ...
 Where `Flag` is a single byte indicating whether or not the zero-byte appears in
 the histogram, `b#` is a single byte containing a character, and `freq#` is the
 frequency associated with `b#` (4 bytes, or an `int` / `uint32_t`). The pattern
-repeats until a 0-byte is found, indicating the end of the histogram. If the
-`Flag` is set (i.e. non-zero) then the first 0-byte encountered will actually
-be treated as a histogram entry for the 0-byte, and will continue reading until
-the actual terminating 0-byte is encountered.
+repeats until a 0-byte is found in the expected `b#` location, indicating the
+end of the histogram. If the `Flag` is set (i.e. non-zero) then the first
+0-byte encountered will actually be treated as a histogram entry for the
+0-byte, and will continue reading until the actual terminating 0-byte is
+encountered.
 
 The byte-frequency pairs will be stored in order of frequency (TODO: ascending
 or descending!?).
