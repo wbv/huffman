@@ -19,8 +19,8 @@ static void usage()
 
 int main(int argc, char** argv)
 {
-	std::ifstream fin;
-	std::ofstream fout;
+	ifstream fin;
+	ofstream fout;
 	bool fileOpen = 1;
 
 	/* argument checking / usage */
