@@ -4,10 +4,10 @@ OBJS=main.o
 all: huffman
 
 %.o: %.cpp
-	gcc $(CPPFLAGS) -c $< -o $@
+	g++ $(CPPFLAGS) -c $< -o $@
 
 huffman: $(OBJS)
-	gcc $(CPPFLAGS) $(OBJS) -o huffman
+	g++ $(CPPFLAGS) $(OBJS) -o huffman
 
 clean: cleandocs
 	rm -f $(OBJS) huffman

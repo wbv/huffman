@@ -1,10 +1,6 @@
-#include <cstdio>
-#include <cstring>
 #include <iostream>
 #include <fstream>
-
-using std::fprintf;
-using std::strncmp;
+#include <string>
 
 using namespace std;
 
@@ -12,9 +8,8 @@ bool checkOpen (ifstream &fin, ofstream &fout);
 
 static void usage()
 {
-	fprintf(stdout,
-		"Usage:\n\thuffman -e originalfile encodedfile"
-		"\n\thuffman -d encodedfile decodedfile\n");
+	cerr << "Usage:\n\thuffman -e originalfile encodedfile"
+	        "\n\thuffman -d encodedfile decodedfile\n";
 }
 
 int main(int argc, char** argv)
@@ -26,13 +21,14 @@ int main(int argc, char** argv)
 	/* argument checking / usage */
 	if (argc != 4)
 	{
-		fprintf(stderr, "E: %s takes 3 args. %d found.\n", argv[0], argc - 1);
+		cerr << "E: " << argv[0] << " takes 3 args. " << (argc - 1)
+		     << " found.\n";
 		usage();
 		return 1;
 	}
 	
 	/* handle decode */
-	if (!strncmp("-d", argv[1], 3))
+	if (string("-d") == string(argv[1]))
 	{
 		//Open encoded file and decoded file in binary and check open
 		fin.open(argv[2], ios::in | ios::binary);
@@ -44,7 +40,7 @@ int main(int argc, char** argv)
 	}
 	
 	/* handle encode */
-	else if (!strncmp("-e", argv[1], 3))
+	else if (string("-e") == string(argv[1]))
 	{
 		
 		//Open og file and encoded file in binary and check open
