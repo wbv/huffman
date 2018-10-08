@@ -1,4 +1,4 @@
-CPPFLAGS=-g -O2 -Wall -pedantic -std=c++14
+CPPFLAGS=-g -Wall -pedantic -std=c++14
 OBJS=main.o
 
 all: huffman
@@ -17,3 +17,8 @@ docs:
 
 cleandocs:
 	rm -rf html latex # remove Doxygen stuff too
+
+tests:
+	echo -ne "\0a\x55\x54\x53\x52b\x44\x43\x42\x41\0" > testnoflag.dat
+	echo -ne "\1a\x55\x54\x53\x52b\x44\x43\x42\x41\0\x33\x32\x31\x30\0" \
+	  > testflag.dat
