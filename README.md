@@ -1,8 +1,7 @@
 CSC 315 -- Section 2 -- Fall 2018
 =================================
 
-Course Information
-==================
+## Course Information
 **Authors:**
 	Haley Linnig, Walter Vaughan    
 
@@ -12,8 +11,7 @@ Course Information
 **Professor:**
 	Dr. Larry Pyeatt
 
-Program Description
-===================
+## Program Description
 - Data compression programs consist of an encoder and a decoder. The encoder takes
 an input file and encodes it to an output file (presumably with lesser storage
 requirements). The decoder takes the encoded file as input and outputs a decoded
@@ -35,8 +33,7 @@ encoded input file, and decoded into characters using the same Huffman coding
 tree. These decoded characters are written to the decoded output file.
 
 
-Algorithm for Histogram
-=======================
+## Algorithm for Histogram
 
 Our chosen binary format for the histogram is as follows:
 
@@ -56,28 +53,22 @@ end of the histogram. If the `Flag` is set (i.e. non-zero) then the first
 0-byte, and will continue reading until the actual terminating 0-byte is
 encountered.
 
-The byte-frequency pairs will be stored in order of frequency (TODO: ascending
-or descending!?).
+The byte-frequency pairs will be stored in ascending order of frequency, to aid
+building the code tree.
 
-Building
-========
+## Building
 `make`
 
-Running
-=======
+## Running/Usage
 `huffman –e originalfile encodedfile`    (encoder)
 
 `huffman –d encodedfile decodedfile`     (decoder)
 
 
-Usage
-=====
- - TODO
 
-Known Bugs
-==========
- - Doesn't exist yet
- - Consequentially, doesn't work
+## Known Bugs
+ - Doesn't actually encode a file, just builds the histogram structure
+ - Decode does nothing to the output file
 
 Revision History
 ================
