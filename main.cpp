@@ -131,14 +131,13 @@ bool readHistogram(ifstream& f, unsigned hist[256])
 	bool flag; /* indicates whether 0-byte is in histogram */
 	uint8_t character; 
 	uint32_t charcount;
-	f.get((char&)character); /* read flag byte */
-
-	if (!f) return false; /* don't bother trying if the file is invalid */
 
 	f.seekg(0); /* always read histogram from the beginning */
-	
+	if (!f) return false; /* don't bother trying if the file is invalid */
+
+	f.get((char&)character); /* read flag byte */
 	flag = static_cast<bool>(character);
-	f.get((char&)character);
+	f.get((char&)character); /* read first character histogram entry */
 	while (f and (flag or character))
 	{
 		/* for some unholy reason, the second argument is actually
