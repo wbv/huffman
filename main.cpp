@@ -140,9 +140,67 @@ bool readHistogram(ifstream& f, unsigned hist[256])
 	f.get((char&)character); /* read first character histogram entry */
 	while (f and (flag or character))
 	{
-		/* for some unholy reason, the second argument is actually
-		 * the number of bytes you want to read, minus 1.... */
-		f.get((char*)&charcount, 5); 
+		/* read first byte to determine length 
+ 		 * of utf-8 encoded frequency count */
+		f.get((char&)charcount);
+
+		if (!(0xfc ^ (charcount & 0xfc))) /* 6-byte count */
+		{
+			charcount &= 1;
+			uint8_t tmpbyte;
+			for (int i = 4; i >= 0; i--)
+			{
+				f.get((char&)tmpbyte);
+				charcount <<= 6;
+				charcount |= tmpbyte & 0x3f;
+			}
+		}
+		else if (!(0xf8 ^ (charcount & 0xf8))) /* 5-byte count */
+		{
+			charcount &= 3;
+			uint8_t tmpbyte;
+			for (int i = 3; i >= 0; i--)
+			{
+				f.get((char&)tmpbyte);
+				charcount <<= 6;
+				charcount |= tmpbyte & 0x3f;
+			}
+		}
+		else if (!(0xf0 ^ (charcount & 0xf0))) /* 4-byte count */
+		{
+			charcount &= 7;
+			uint8_t tmpbyte;
+			for (int i = 2; i >= 0; i--)
+			{
+				f.get((char&)tmpbyte);
+				charcount <<= 6;
+				charcount |= tmpbyte & 0x3f;
+			}
+		}
+		else if (!(0xe0 ^ (charcount & 0xe0))) /* 3-byte count */
+		{
+			charcount &= 0xf;
+			uint8_t tmpbyte;
+			for (int i = 1; i >= 0; i--)
+			{
+				f.get((char&)tmpbyte);
+				charcount <<= 6;
+				charcount |= tmpbyte & 0x3f;
+			}
+		}
+		else if (!(0xc0 ^ (charcount & 0xc0))) /* 2-byte count */
+		{
+			charcount &= 0x1f;
+			uint8_t tmpbyte;
+			f.get((char&)tmpbyte);
+			charcount <<= 6;
+			charcount |= tmpbyte & 0x3f;
+		}
+		else /* 1-byte count */
+		{
+			charcount &= 0x7f;
+		}
+
 		hist[character] = charcount;
 		/* if we save a value for the null-byte, reset the flag so
 		 * the next null byte will successfully indicate end of histogram */
@@ -183,8 +241,65 @@ bool writeHistogram(ofstream& f, unsigned hist[256])
 		{
 			uint8_t character = static_cast<uint8_t>(*freqIter - hist);
 			uint32_t charcount = static_cast<uint32_t>(**freqIter);
+			if (charcount > 0x7fffffff)
+				cerr << "Warning: cannot count more than 2^31 " 
+				     << "instances of character '" << (char)character << "'\n"
+				     << "         (found " << charcount << ")\n";
+
 			f.write((char*)&character, 1);
-			f.write((char*)&charcount, 4);
+
+			if (charcount > 0x3ffffff) /* 6-byte storage */
+			{
+				character = 0xfc & ((charcount >> 30) & 1);
+				f.write((char*)&character, 1);
+				for (int i = 4; i >= 0; i--)
+				{
+					character = 0x80 & ((charcount >> (i*6)) & 0x3f);
+					f.write((char*)&character, 1);
+				}
+			}
+			else if (charcount > 0x1fffff) /* 5-byte storage */
+			{
+				character = 0xf8 & ((charcount >> 24) & 3);
+				f.write((char*)&character, 1);
+				for (int i = 3; i >= 0; i--)
+				{
+					character = 0x80 & ((charcount >> (i*6)) & 0x3f);
+					f.write((char*)&character, 1);
+				}
+			}
+			else if (charcount > 0xffff) /* 4-byte storage */
+			{
+				character = 0xf0 & ((charcount >> 18) & 7);
+				f.write((char*)&character, 1);
+				for (int i = 2; i >= 0; i--)
+				{
+					character = 0x80 & ((charcount >> (i*6)) & 0x3f);
+					f.write((char*)&character, 1);
+				}
+			}
+			else if (charcount > 0x7ff) /* 3-byte storage */
+			{
+				character = 0xe0 & ((charcount >> 12) & 0xf);
+				f.write((char*)&character, 1);
+				for (int i = 1; i >= 0; i--)
+				{
+					character = 0x80 & ((charcount >> (i*6)) & 0x3f);
+					f.write((char*)&character, 1);
+				}
+			}
+			else if (charcount > 0x7f) /* 2-byte storage */
+			{
+				character = 0xc0 & ((charcount >> 6) & 0x1f);
+				f.write((char*)&character, 1);
+				character = 0x80 & (charcount & 0x3f);
+				f.write((char*)&character, 1);
+			}
+			else /* 1-byte storage */
+			{
+				character = charcount & 0x7f;
+				f.write((char*)&character, 1);
+			}
 		}
 
 		/* terminate the histogram section of the file */

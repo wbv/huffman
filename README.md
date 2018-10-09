@@ -41,19 +41,35 @@ Our chosen binary format for the histogram is as follows:
      ----------------------------------------------
      | Flag | b0 | freq0 | .... | bN | freqN | \0 |
      ----------------------------------------------
-Byte: 0      1    2:5      ...   
+Byte: 0      1    2...      ...   
 ```
 
 Where `Flag` is a single byte indicating whether or not the zero-byte appears in
 the histogram, `b#` is a single byte containing a character, and `freq#` is the
-frequency associated with `b#` (4 bytes, or an `int` / `uint32_t`). The pattern
-repeats until a 0-byte is found in the expected `b#` location, indicating the
-end of the histogram. If the `Flag` is set (i.e. non-zero) then the first
-0-byte encountered will actually be treated as a histogram entry for the
-0-byte, and will continue reading until the actual terminating 0-byte is
+UTF-8 encoded frequency associated with `b#` (variable from 1 to 6 bytes). The
+pattern repeats until a 0-byte is found in the expected `b#` location,
+indicating the end of the histogram. If the `Flag` is set (i.e. non-zero) then
+the first 0-byte encountered will actually be treated as a histogram entry for
+the 0-byte, and will continue reading until the actual terminating 0-byte is
 encountered.
 
-The byte-frequency pairs will be stored in ascending order of frequency, to aid
+The UTF-8 encoding stores frequencies of up to `2^31 - 1` appearances of a
+character. The encoding scheme is shown here, the way it was presented via Rob
+Pike in 2003:
+```
+   Bits  Hex Min  Hex Max  Byte Sequence in Binary
+1    7  00000000 0000007f 0xxxxxxx
+2   11  00000080 000007FF 110xxxxx 10xxxxxx
+3   16  00000800 0000FFFF 1110xxxx 10xxxxxx 10xxxxxx
+4   21  00010000 001FFFFF 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+5   26  00200000 03FFFFFF 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+6   31  04000000 7FFFFFFF 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+```
+
+The leftmost column indicates the number of bytes needed to store the value
+between the bounds of Hex Min and Hex Max.
+
+The byte-frequency pairs are stored in ascending order of frequency, to aid
 building the code tree.
 
 ## Building
