@@ -1,4 +1,5 @@
-CPPFLAGS=-g -Wall -pedantic -std=c++14
+DEBUGFLAGS=-g -D_DEBUG
+CPPFLAGS=$(DEBUGFLAGS) -Wall -pedantic -std=c++14
 OBJS=main.o
 
 all: huffman
