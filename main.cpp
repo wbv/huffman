@@ -4,13 +4,18 @@
 #include <vector> // histogram sorting uses vector
 #include <algorithm> // sort
 #include <numeric> // iota
+#include <cstdint> // uint32_t, uint8_t
+
+#include "hufftree.h"
+#include "minheap.h"
 
 using namespace std;
 
 bool checkOpen (ifstream &fin, ofstream &fout);
-bool compareHistEntry(unsigned* a, unsigned* b);
-bool readHistogram(ifstream& f, unsigned hist[256]);
-bool writeHistogram(ofstream& f, unsigned hist[256]);
+bool compareHistEntry(uint32_t* a, uint32_t* b);
+bool readHistogram(ifstream& f, uint32_t hist[256]);
+bool writeHistogram(ofstream& f, uint32_t hist[256]);
+hufftree getTreeFromHist(uint32_t hist[256]);
 
 static void usage()
 {
@@ -23,7 +28,7 @@ int main(int argc, char** argv)
 	ifstream fin;
 	ofstream fout;
 	bool filesOpen = false;
-	unsigned histogram[256] = {0};
+	uint32_t histogram[256] = {0};
 
 
 	/* argument checking / usage */
@@ -83,6 +88,9 @@ int main(int argc, char** argv)
 
 		if (!writeHistSuccess)
 			cerr << "Warning: output histogram failed.\n";
+
+		hufftree tree = getTreeFromHist(histogram); 
+
 	}
 	
 	else
@@ -117,7 +125,7 @@ bool checkOpen (ifstream &fin, ofstream &fout)
 }
 
 
-bool compareHistEntry(unsigned* a, unsigned* b)
+bool compareHistEntry(uint32_t* a, uint32_t* b)
 {
 	return *a < *b;
 }
@@ -126,7 +134,7 @@ bool compareHistEntry(unsigned* a, unsigned* b)
 // Reads the histogram array from an open file, storing it
 // inside of the `hist` argument.
 // returns true on success, false otherwise
-bool readHistogram(ifstream& f, unsigned hist[256])
+bool readHistogram(ifstream& f, uint32_t hist[256])
 {
 	bool flag; /* indicates whether 0-byte is in histogram */
 	uint8_t character; 
@@ -218,10 +226,10 @@ bool readHistogram(ifstream& f, unsigned hist[256])
 
 // Writes the histogram array to an open file
 // returns true on success, false otherwise
-bool writeHistogram(ofstream& f, unsigned hist[256])
+bool writeHistogram(ofstream& f, uint32_t hist[256])
 {
 		/* pointers to the histogram array */
-		vector<unsigned*> freqs(256);
+		vector<uint32_t*> freqs(256);
 		/* fill freqs with pointers to each item */
 		iota(freqs.begin(), freqs.end(), hist);
 		/* sort freqs in ascending order */
@@ -235,7 +243,7 @@ bool writeHistogram(ofstream& f, unsigned hist[256])
 		/* if null-byte appears in histogram, set flag byte */
 		f.put(hist[0] ? 1 : 0);
 
-		/* write a byte indicating the character, and 4-byte unsigned int
+		/* write a byte indicating the character, and uing32_t
          * indicating the number of times the character appears */
 		for (; freqIter != freqs.end() and f; freqIter++)
 		{
@@ -307,4 +315,34 @@ bool writeHistogram(ofstream& f, unsigned hist[256])
 
 		/* if the output is successful, f will still evaluate to true */
 		return (bool)f;
+}
+
+/* takes a histogram, makes a heap, then turns the heap into a hufftree */
+hufftree getTreeFromHist(uint32_t hist[256])
+{
+	minheap heap = minheap();
+	node* left;
+	node* right;
+	node* top;
+
+	for (size_t i = 0; i < 256; i++)
+		if (hist[i])
+			heap.insert(hist[i], static_cast<uint8_t>(i));
+
+	while (heap.size() > 1)
+	{
+		left = heap.pop_smallest();
+		right = heap.pop_smallest();
+		top = new node;
+		top->weight = left->weight + right->weight;
+		top->left = left;
+		top->right = right;
+		heap.insert(top);
+	}
+
+	hufftree tree = hufftree(heap.pop_smallest());
+#ifdef _DEBUG
+	tree.printTree();
+#endif
+	return tree;
 }

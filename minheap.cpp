@@ -14,7 +14,7 @@ minheap::minheap()
 	pos = 0;
 }
 
-void minheap::insert(data d)
+void minheap::insert(node* n)
 {
 	/* i = index of heap to insert new data */
 	size_t i;
@@ -28,24 +28,37 @@ void minheap::insert(data d)
 	}
 	
 	/* loop while parent node is greater than inserted, and we are't at root */
-	for (i = ++(this->pos); i/2 and d.weight < array[i/2].weight; i/=2) 
+	for (i = ++(this->pos); i/2 and n->weight < array[i/2].weight; i/=2) 
 		/* move parent node down the heap */
 		array[i] = array[i/2];
 
 	/* we found the spot for our data */
-	array[i] = d;
+	array[i].left = n->left;
+	array[i].right = n->right;
+	array[i].weight = n->weight;
+	array[i].ch = n->ch;
+
+	/* if the node passed in wasn't from the "empty spot" on the array stack */
+	/* then clean up its memory footprint from the heap */
+	if (n != &array[0])
+		delete n;
 }
 
 void minheap::insert(uint32_t freq, uint8_t ch)
 {
-	minheap::data d = {freq, ch};
-	insert(d);
+	array[0].weight = freq;
+	array[0].ch = ch;
+	array[0].left = nullptr;
+	array[0].right = nullptr;
+	insert(&array[0]);
 }
 
-minheap::data minheap::pop_smallest()
+node* minheap::pop_smallest()
 {
 	/* initialize an invalid heap node */
-	minheap::data small = {(uint32_t)-1, 0}; 
+	node* small = new node;
+	small->weight = (uint32_t)-1;
+	small->ch = 0; 
 
 	/* check for empty heap */
 	if (pos == 0)
@@ -57,7 +70,10 @@ minheap::data minheap::pop_smallest()
 	}
 
 	/* minheap --> smallest is at the root */
-	small = array[1];
+	small->left = array[1].left;
+	small->right = array[1].right;
+	small->weight = array[1].weight;
+	small->ch = array[1].ch;
 
 	/* make sure the heap is restored if it isn't now empty */
 	if ((--pos) > 0)
