@@ -83,8 +83,9 @@ building the code tree.
 
 
 ## Known Bugs
- - Doesn't actually encode a file, just builds the histogram structure
- - Decode does nothing to the output file
+ - Doesn't actually encode a file, just builds the histogram structure and the
+   huffman code table in memory.
+ - Decode does nothing to the output file, yet.
 
 Revision History
 ================
