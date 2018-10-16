@@ -311,7 +311,11 @@ int encode(char* infile, char* encodedfile)
 	}
 
 	tree = getTreeFromHist(histogram);
-	getHuffMapFromTree(map, tree);
+	/* special case -- tree only has one node -- default code: 1 */
+	if (tree->isLeaf())
+		map[tree->ch] = {1, 1};
+	else
+		getHuffMapFromTree(map, tree);
 
 	//encoderStats(argv);
 	return error;
