@@ -13,7 +13,6 @@ using std::uint32_t;
 struct utf8_t {
 	uint8_t nbytes;
 	uint8_t encoded[6];
-	uint8_t __struct_pack_align_to_64bits;
 };
 
 
