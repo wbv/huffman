@@ -1,6 +1,6 @@
 DEBUGFLAGS=-g -D_DEBUG
 CPPFLAGS=$(DEBUGFLAGS) -Wall -pedantic -std=c++14
-OBJS=main.o minheap.o hufftree.o
+OBJS=main.o minheap.o hufftree.o utf8.o
 
 all: huffman
 
