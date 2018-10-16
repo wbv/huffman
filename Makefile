@@ -9,6 +9,7 @@ all: huffman
 
 huffman: $(OBJS)
 	g++ $(CPPFLAGS) $(OBJS) -o huffman
+	rm -f $(OBJS)
 
 clean: cleandocs
 	rm -f $(OBJS) huffman
