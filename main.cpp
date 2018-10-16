@@ -20,6 +20,8 @@ bool checkOpen (ifstream &fin, ofstream &fout);
 bool compareHistEntry(uint32_t* a, uint32_t* b);
 bool readHistogram(ifstream& f, uint32_t hist[256]);
 bool writeHistogram(ofstream& f, uint32_t hist[256]);
+int decode(char* encodedfile, char* outfile);
+int encode(char* infile, char* encodedfile);
 hufftree getTreeFromHist(uint32_t hist[256]);
 
 static void usage()
@@ -30,88 +32,24 @@ static void usage()
 
 int main(int argc, char** argv)
 {
-	ifstream fin;
-	ofstream fout;
-	bool filesOpen = false;
-	uint32_t histogram[256] = {0};
-
-
-	/* argument checking / usage */
+	/* argument count checking */
 	if (argc != 4)
 	{
 		cerr << "E: " << argv[0] << " takes 3 args. " << (argc - 1)
 		     << " found.\n";
-		usage();
-		return 3;
 	}
 	
 	/* handle decode */
-	if (string("-d") == string(argv[1]))
-	{
-		//Open encoded file and decoded file in binary and check open
-		fin.open(argv[2], ios::in | ios::binary);
-		fout.open(argv[3], ios::out | ios::binary | ios::trunc);
-
-		filesOpen = checkOpen(fin, fout);
-		if (!filesOpen)
-			return 1;
-
-		if (!readHistogram(fin, histogram))
-			return 1;
-
-		/* readHistogram will leave fin pointing at the end of the histogram 
-		 * so consider working from that point, or make sure you "find" the
-		 * end of the histogram section again */
-		
-		decoderStats(argv);
-	}
+	else if (string("-d") == string(argv[1]))
+		return decode(argv[2], argv[3]);
 	
 	/* handle encode */
 	else if (string("-e") == string(argv[1]))
-	{
-		
-		//Open og file and encoded file in binary and check open
-		fin.open(argv[2], ios::in | ios::binary);
-		fout.open(argv[3], ios::out | ios::binary | ios::trunc);
+		return encode(argv[2], argv[3]);
 	
-		filesOpen = checkOpen(fin, fout);
-		if (!filesOpen)
-			return 1;
-
-		/* read a character at a time, populating histogram */
-		uint8_t character; 
-		fin.get((char&)character);
-		while (fin.gcount() > 0)
-		{
-			histogram[character]++;
-			fin.get((char&)character);
-		}
-
-		/* if ending for non-eof reasons, badness occurred :( */
-		if (!fin.eof())
-			cerr << "Warning: input file read finished prematurely.\n";
-
-		bool writeHistSuccess = writeHistogram(fout, histogram);
-
-		if (!writeHistSuccess)
-			cerr << "Warning: output histogram failed.\n";
-
-		hufftree tree = getTreeFromHist(histogram); 
-
-		encoderStats(argv);
-	}
-	
-	else
-	{
-		usage();
-		return 2;
-	}
-
-	//Close files
-	fin.close();
-	fout.close();
-	
-	return 0;
+	/* invalid flag or incorrect arg count */
+	usage();
+	return (int)-1;
 }
 
 
@@ -328,4 +266,82 @@ void decoderStats(char** argv)
 	cout << " ratio: " << fixed << setprecision(2) << compressRatio << endl;
 	
 	return;
+}
+
+int encode(char* infile, char* encodedfile)
+{
+	ifstream fin;
+	ofstream fout;
+	bool filesOpen = false;
+	uint32_t histogram[256] = {0};
+	int error = 0;
+
+	//Open og file and encoded file in binary and check open
+	fin.open(infile, ios::in | ios::binary);
+	fout.open(encodedfile, ios::out | ios::binary | ios::trunc);
+
+	filesOpen = checkOpen(fin, fout);
+	if (!filesOpen)
+		return 1;
+
+	/** PASS 1 - ENCODE **/
+	/* read a character at a time, populating histogram */
+	uint8_t character;
+	fin.get((char&)character);
+	while (fin.gcount() > 0)
+	{
+		histogram[character]++;
+		fin.get((char&)character);
+	}
+
+	/* if ending for non-eof reasons, badness occurred :( */
+	if (!fin.eof())
+	{
+		cerr << "Warning: input file read finished prematurely.\n";
+		error += 2;
+	}
+
+	bool writeHistSuccess = writeHistogram(fout, histogram);
+
+	if (!writeHistSuccess)
+	{
+		error += 4;
+		cerr << "Warning: output histogram failed.\n";
+	}
+
+	hufftree tree = getTreeFromHist(histogram);
+
+	//encoderStats(argv);
+	return error;
+}
+
+
+int decode(char* encodedfile, char* outfile)
+{
+	ifstream fin;
+	ofstream fout;
+	bool filesOpen = false;
+	uint32_t histogram[256] = {0};
+
+	//Open encoded file and decoded file in binary and check open
+	fin.open(encodedfile, ios::in | ios::binary);
+	fout.open(outfile, ios::out | ios::binary | ios::trunc);
+
+	filesOpen = checkOpen(fin, fout);
+	if (!filesOpen)
+		return false;
+
+	if (!readHistogram(fin, histogram))
+	{
+		fin.close();
+		fout.close();
+		return false;
+	}
+
+	/* readHistogram will leave fin pointing at the end of the histogram
+	 * so consider working from that point, or make sure you "find" the
+	 * end of the histogram section again */
+	
+	//decoderStats(argv);
+	return true;
 }
