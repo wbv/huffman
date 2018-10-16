@@ -8,6 +8,7 @@
 #include <cstdint> // uint32_t, uint8_t
 
 #include "hufftree.h"
+#include "huffmap.h"
 #include "minheap.h"
 #include "node.h"
 #include "utf8.h"
@@ -22,7 +23,7 @@ bool readHistogram(ifstream& f, uint32_t hist[256]);
 bool writeHistogram(ofstream& f, uint32_t hist[256]);
 int decode(char* encodedfile, char* outfile);
 int encode(char* infile, char* encodedfile);
-hufftree getTreeFromHist(uint32_t hist[256]);
+node* getTreeFromHist(uint32_t hist[256]);
 
 static void usage()
 {
@@ -185,8 +186,9 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 		return (bool)f;
 }
 
-/* takes a histogram, makes a heap, then turns the heap into a hufftree */
-hufftree getTreeFromHist(uint32_t hist[256])
+// takes a histogram, makes a heap, then turns the heap into a tree for parsing
+// into a huffman code table
+node* getTreeFromHist(uint32_t hist[256])
 {
 	minheap heap = minheap();
 	node* left;
@@ -208,11 +210,8 @@ hufftree getTreeFromHist(uint32_t hist[256])
 		heap.insert(top);
 	}
 
-	hufftree tree = hufftree(heap.pop_smallest());
-#ifdef _DEBUG
-	tree.printTree();
-#endif
-	return tree;
+	top = heap.pop_smallest();
+	return top;
 }
 
 
@@ -274,6 +273,8 @@ int encode(char* infile, char* encodedfile)
 	ofstream fout;
 	bool filesOpen = false;
 	uint32_t histogram[256] = {0};
+	node* tree;
+	huffcode_t map[256] = {0};
 	int error = 0;
 
 	//Open og file and encoded file in binary and check open
@@ -284,7 +285,7 @@ int encode(char* infile, char* encodedfile)
 	if (!filesOpen)
 		return 1;
 
-	/** PASS 1 - ENCODE **/
+	/** PASS 1 - BUILD HISTOGRAM AND CODE MAP **/
 	/* read a character at a time, populating histogram */
 	uint8_t character;
 	fin.get((char&)character);
@@ -309,7 +310,8 @@ int encode(char* infile, char* encodedfile)
 		cerr << "Warning: output histogram failed.\n";
 	}
 
-	hufftree tree = getTreeFromHist(histogram);
+	tree = getTreeFromHist(histogram);
+	getHuffMapFromTree(map, tree);
 
 	//encoderStats(argv);
 	return error;

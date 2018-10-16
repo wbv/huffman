@@ -26,9 +26,9 @@ void minheap::insert(node* n)
 #endif
 		return;
 	}
-	
+
 	/* loop while parent node is greater than inserted, and we are't at root */
-	for (i = ++(this->pos); i/2 and n->weight < array[i/2].weight; i/=2) 
+	for (i = ++(this->pos); i/2 and n->weight < array[i/2].weight; i/=2)
 		/* move parent node down the heap */
 		array[i] = array[i/2];
 
@@ -58,7 +58,7 @@ node* minheap::pop_smallest()
 	/* initialize an invalid heap node */
 	node* small = new node;
 	small->weight = (uint32_t)-1;
-	small->ch = 0; 
+	small->ch = 0;
 
 	/* check for empty heap */
 	if (pos == 0)
@@ -77,36 +77,51 @@ node* minheap::pop_smallest()
 
 	/* make sure the heap is restored if it isn't now empty */
 	if ((--pos) > 0)
+	{
+		array[1] = array[pos+1];
 		heapify(1);
-	
+	}
+
 	return small;
 }
 
+/* starting from some node, percolate nodes up to correct ordering, */
+/* traversing down until the ordering is correct */
 void minheap::heapify(size_t start)
 {
 	size_t left = start*2;
 	size_t right = start*2 + 1;
 
-	/* if there are no children, we're at a leaf, so put the */
-    /* leaf which was at the end of the array in this hole */
+	/* if there are no children, we're at a leaf, so the ordering is correct */
 	if (left > pos)
+		return;
+
+	/* if left child exists but right does not, */
+	/*  and it's out of order, fix its order and then recurse */
+    /* if both exist and the left is smaller than the right */
+	/*  recursively fix order if it's incorrect */
+	else if (right > pos or array[left].weight < array[right].weight)
 	{
-		array[start] = array[pos+1];
+		if (array[left].weight < array[start].weight)
+		{
+			node tmp = array[left];
+			array[left] = array[start];
+			array[start] = tmp;
+			heapify(left);
+		}
 		return;
 	}
 
-	/* if left child exists but right does not, */
-    /* or both exist and the left is smaller than the right */
-	if (right > pos or array[left].weight < array[right].weight)
+	else // array[left].weight >= array[right].weight
 	{
-		array[start] = array[left];
-		heapify(left);
-	}
-	/* both children exist and the right is smaller */
-	else
-	{
-		array[start] = array[right];
-		heapify(right);
+		if(array[right].weight < array[start].weight)
+		{
+			node tmp = array[right];
+			array[right] = array[start];
+			array[start] = tmp;
+			heapify(right);
+		}
+		return;
 	}
 }
 
