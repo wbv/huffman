@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string> // argument parsing 
 #include <vector> // histogram sorting uses vector
@@ -11,6 +12,8 @@
 
 using namespace std;
 
+void encoderStats(char** argv);
+void decoderStats(char** argv);
 bool checkOpen (ifstream &fin, ofstream &fout);
 bool compareHistEntry(uint32_t* a, uint32_t* b);
 bool readHistogram(ifstream& f, uint32_t hist[256]);
@@ -57,6 +60,8 @@ int main(int argc, char** argv)
 		/* readHistogram will leave fin pointing at the end of the histogram 
 		 * so consider working from that point, or make sure you "find" the
 		 * end of the histogram section again */
+		
+		decoderStats(argv);
 	}
 	
 	/* handle encode */
@@ -91,6 +96,7 @@ int main(int argc, char** argv)
 
 		hufftree tree = getTreeFromHist(histogram); 
 
+		encoderStats(argv);
 	}
 	
 	else
@@ -345,4 +351,57 @@ hufftree getTreeFromHist(uint32_t hist[256])
 	tree.printTree();
 #endif
 	return tree;
+}
+
+
+void encoderStats(char** argv)
+{
+	//Need to put real value in, maybe pass file?
+	int numBytes = 0, numCode = 3;
+	//How are we going to access values
+	char myChar = 'a';
+	double probability = 0.0, compressRatio = 0.0, entropy = 0.0, avgBit = 0.0;
+	double codingEff = 0.0;
+	int huffCode = 1;
+
+	cout << endl << "Huffman Encoder Pass 1" << endl << setfill ('-') << setw(23);
+        cout << "-" << endl << "Read " << numBytes << " from " << argv[2];
+        cout <<", found " << numCode << " code words" << endl << endl;
+        cout << "Huffman Code Table" << endl << setfill ('-') << setw(18) << "-";
+	cout << endl << "ASCII Code " << setfill (' ') << setw(25) << "Probablility (%) ";
+	cout << setw(20) << " Huffman Code" << endl;
+
+	//For all code words, print out ASCII code, probability and Huffman Code
+	for(int i = 0; i < numCode; i++)
+	{
+		cout << int(myChar) << " " << myChar << setw(25) << setprecision(2) << fixed;
+	        cout << probability << setw(25) <<  huffCode << endl;
+	}
+
+	cout << endl << "Huffman Encoder Pass 2" << endl << setfill ('-') << setw(23) << "-";
+	cout << endl <<  "Wrote " << numBytes << " encoded bytes to " << argv[3] << " ( ";
+	cout << numBytes << " bytes including histogram)" << endl << endl;
+
+	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
+	cout << "-" << endl << "Compression ratio = " << fixed << setprecision(2);
+	cout << compressRatio << "% " << endl << "Entropy = " << entropy << endl; 
+	cout << "Average bits per symbol in Huffman coding = " << avgBit << endl;
+       	cout << "Coding efficiency = " << codingEff << "%" << endl;
+
+	return;
+}
+
+
+void decoderStats(char** argv)
+{
+	int numBytes = 0;
+	double compressRatio = 0.0;
+
+	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
+	cout << "-" << endl << "Read " << numBytes << " encoded bytes from " << argv[2];
+	cout << "( " << numBytes << " bytes including the histogram" << endl << "Wrote";
+	cout << numBytes << " decoded bytes to " << argv[3] << endl << "Compression";
+	cout << " ratio: " << fixed << setprecision(2) << compressRatio << endl;
+	
+	return;
 }
