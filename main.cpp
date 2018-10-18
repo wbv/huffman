@@ -16,7 +16,7 @@
 
 using namespace std;
 
-void encoderStats(uint32_t hist[256]);
+void encoderStats(uint32_t hist[256], huffcode_t huffmap[256]);
 void decoderStats();
 bool checkOpen (ifstream &fin, ofstream &fout);
 bool compareHistEntry(uint32_t* a, uint32_t* b);
@@ -24,6 +24,7 @@ bool readHistogram(ifstream& f, uint32_t hist[256]);
 bool writeHistogram(ofstream& f, uint32_t hist[256]);
 int decode(char* encodedfile, char* outfile);
 int encode(char* infile, char* encodedfile);
+string huffcodeToString(huffcode_t c);
 
 
 static void usage()
@@ -165,6 +166,7 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
          * indicating the number of times the character appears */
 		for (; freqIter != freqs.end() and f; freqIter++)
 		{
+			eStats.numCodeWords++;
 			uint8_t character = static_cast<uint8_t>(*freqIter - hist);
 			uint32_t charcount = static_cast<uint32_t>(**freqIter);
 			utf8_t codept = getUTF8(charcount);
@@ -188,14 +190,14 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 }
 
 
-void encoderStats(uint32_t hist[256])
+void encoderStats(uint32_t hist[256], huffcode_t huffmap[256])
 {
 	//Need to put real value in, maybe pass file?
 	//How are we going to access values
-	char myChar = 'a';
+	uint32_t charFreq;
 	double probability = 0.0;//, compressRatio = 0.0, entropy = 0.0, avgBit = 0.0;
 	//double codingEff = 0.0;
-	int huffCode = 1;
+	huffcode_t huffCode;
 
 	cout << endl << "Huffman Encoder Pass 1" << endl << setfill ('-') << setw(22);
         cout << "-" << endl << "Read " << eStats.numBytes << " from " << eStats.inputName;
@@ -205,21 +207,28 @@ void encoderStats(uint32_t hist[256])
 	cout << setw(20) << " Huffman Code" << endl;
 
 	//For all code words, print out ASCII code, probability and Huffman Code
-	for(int i = 0; i < eStats.numCodeWords; i++)
+	for(int ch = 0; ch < 256; ch++)
 	{
-		myChar = hist[i];
-		cout << int(myChar) << " ( " << myChar << " )" <<  setw(25) << setprecision(2) << fixed;
-	        cout << probability << setw(25) <<  huffCode << endl;
+		charFreq = hist[ch];
+		if (charFreq == 0)
+			continue;
+
+		huffCode = huffmap[ch];	
+
+		probability = 100.0 * (double)charFreq / (double)eStats.numBytes;
+		cout << ch << " ( " << (char)ch << " )"
+		     <<  setw(25) << setprecision(2) << fixed << probability;
+	    cout << setw(25) << huffcodeToString(huffCode) << endl;
 
 		eStats.entropy += calcEntropy(probability);
-		eStats.avgBit += calcAvg(probability, i);
+		eStats.avgBit += calcAvg(probability, huffCode.bitcnt);
 	}
 
 	//Will calculate the compressed size
 	calcCompress(eStats);
 
 	cout << endl << "Huffman Encoder Pass 2" << endl << setfill ('-') << setw(22) << "-";
-	cout << endl <<  "Wrote " << eStats.numBytes << " encoded bytes to " << eStats.outputName << " ( ";
+	cout << endl <<  "Wrote " << eStats.numEBytes << " encoded bytes to " << eStats.outputName << " ( ";
 	cout << eStats.numOverhead << " bytes including histogram)" << endl << endl;
 
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(25);
@@ -295,6 +304,8 @@ int encode(char* infile, char* encodedfile)
 
 	bool writeHistSuccess = writeHistogram(fout, histogram);
 
+	auto histogramPosition = fout.tellp();
+
 	if (!writeHistSuccess)
 	{
 		error += 4;
@@ -311,10 +322,11 @@ int encode(char* infile, char* encodedfile)
 
 	//Find number of bytes including histogram written to file
 	fout.seekp(0, fout.end);
+	eStats.numEBytes = fout.tellp() - histogramPosition;
 	eStats.numOverhead = fout.tellp();
 	fout.seekp(0, fin.beg);
 
-	encoderStats(histogram);
+	encoderStats(histogram, map);
 
 	return error;
 }
@@ -365,4 +377,13 @@ int decode(char* encodedfile, char* outfile)
 
 	decoderStats();
 	return true;
+}
+
+
+string huffcodeToString(huffcode_t c)
+{
+	string s;
+	for (int i = c.bitcnt - 1; i >= 0; i--)
+		s += ((c.bits >> i) & 0x1) ? '1' : '0';
+	return s;
 }

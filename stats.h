@@ -7,7 +7,7 @@ using namespace std;
 struct stats {
 
 	//Can't get numEBytes until encode chars to output file is done
-	int numBytes = 0, numCodeWords = 3, numEBytes = 0, numOverhead = 0;
+	int numBytes = 0, numCodeWords = 0, numEBytes = 0, numOverhead = 0;
 	string inputName, outputName;
 	double compressRatio = 0.0, entropy = 0.0, avgBit = 0.0, codingEff = 0.0;
 	

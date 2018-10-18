@@ -23,3 +23,5 @@ cleandocs:
 test: huffman
 	./huffman -e testtext testtext.z
 	./huffman -d testtext.z testtext2
+	echo "diff of files:"
+	dif testtext testtext2
