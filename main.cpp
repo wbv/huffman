@@ -238,7 +238,7 @@ void decoderStats()
 	
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
 	cout << "-" << endl << "Read " << dStats.numEBytes << " encoded bytes from " << dStats.inputName;
-	cout << "( " << dStats.Overhead << " bytes including the histogram" << endl << "Wrote";
+	cout << "( " << dStats.numOverhead << " bytes including the histogram" << endl << "Wrote";
 	cout << dStats.numBytes << " decoded bytes to " << dStats.outputName << endl << "Compression";
 	cout << " ratio: " << fixed << setprecision(2) << dStats.compressRatio << endl;
 	
@@ -299,17 +299,18 @@ int encode(char* infile, char* encodedfile)
 
 	tree = getTreeFromHist(histogram);
 
+	encoderStats();
+	getHuffMapFromTree(map, tree);
+
+	/** PASS 2: ELECTRIC BOOGALOO **/
+	/* with the map made, read fin again and write the rest of the outfile */
+	writeHuffman(map, fin, fout);
+
 	//Find number of bytes including histogram written to file
 	fout.seekp(0, fout.end);
 	eStats.numOverhead = fout.tellp();
 	fout.seekp(0, fin.beg);
 
-	encoderStats();
-	getHuffMapFromTree(map, tree);
-
-	/** PASS 2: ELECTRIC BOOGALOO **/
-	/* with the map made, read fin again and write the rest of the output */
-	writeHuffman(map, fin, fout);
 
 	return error;
 }
