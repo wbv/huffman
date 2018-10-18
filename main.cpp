@@ -299,7 +299,6 @@ int encode(char* infile, char* encodedfile)
 
 	tree = getTreeFromHist(histogram);
 
-	encoderStats();
 	getHuffMapFromTree(map, tree);
 
 	/** PASS 2: ELECTRIC BOOGALOO **/
@@ -311,6 +310,7 @@ int encode(char* infile, char* encodedfile)
 	eStats.numOverhead = fout.tellp();
 	fout.seekp(0, fin.beg);
 
+	encoderStats();
 
 	return error;
 }
