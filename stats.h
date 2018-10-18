@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string>
+#include <math.h>
 
 using namespace std;
 
 struct stats {
 
 	//Can't get numEBytes until encode chars to output file is done
-	int numBytes = 0, numCodeWords = 0, numEBytes = 0, numOverhead = 0;
+	int numBytes = 0, numCodeWords = 3, numEBytes = 0, numOverhead = 0;
 	string inputName, outputName;
 	double compressRatio = 0.0, entropy = 0.0, avgBit = 0.0, codingEff = 0.0;
 	
@@ -23,10 +24,14 @@ int calcCompress(stats &statInfo)
         return 0;
 }
 
-int calcEntropy()
+double calcEntropy(double prob)
 {
         //-SUM from i = 0 to M - 1 (pi log2 pi)     pi = probability of ith symbol
-        return 0;
+	double tempEnt = 0.0;
+
+	tempEnt = log2 (prob);
+	tempEnt *= prob;
+        return tempEnt;
 }
 
 int calcCodeEff()
@@ -34,4 +39,7 @@ int calcCodeEff()
         return 0;
 }
 
-
+double calcAvg(double prob, int numBits)
+{
+	return 0;
+}

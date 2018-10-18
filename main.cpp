@@ -16,7 +16,7 @@
 
 using namespace std;
 
-void encoderStats();
+void encoderStats(uint32_t hist[256]);
 void decoderStats();
 bool checkOpen (ifstream &fin, ofstream &fout);
 bool compareHistEntry(uint32_t* a, uint32_t* b);
@@ -188,7 +188,7 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 }
 
 
-void encoderStats()
+void encoderStats(uint32_t hist[256])
 {
 	//Need to put real value in, maybe pass file?
 	//How are we going to access values
@@ -207,8 +207,12 @@ void encoderStats()
 	//For all code words, print out ASCII code, probability and Huffman Code
 	for(int i = 0; i < eStats.numCodeWords; i++)
 	{
-		cout << int(myChar) << " " << myChar << setw(25) << setprecision(2) << fixed;
+		myChar = hist[i];
+		cout << int(myChar) << " ( " << myChar << " )" <<  setw(25) << setprecision(2) << fixed;
 	        cout << probability << setw(25) <<  huffCode << endl;
+
+		eStats.entropy += calcEntropy(probability);
+		eStats.avgBit += calcAvg(probability, i);
 	}
 
 	//Will calculate the compressed size
@@ -310,7 +314,7 @@ int encode(char* infile, char* encodedfile)
 	eStats.numOverhead = fout.tellp();
 	fout.seekp(0, fin.beg);
 
-	encoderStats();
+	encoderStats(histogram);
 
 	return error;
 }
