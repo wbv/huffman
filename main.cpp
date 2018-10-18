@@ -7,8 +7,7 @@
 #include <numeric> // iota
 #include <cstdint> // uint32_t, uint8_t
 
-#include "hufftree.h"
-#include "huffmap.h"
+#include "huffcode.h"
 #include "minheap.h"
 #include "node.h"
 #include "utf8.h"
@@ -23,7 +22,7 @@ bool readHistogram(ifstream& f, uint32_t hist[256]);
 bool writeHistogram(ofstream& f, uint32_t hist[256]);
 int decode(char* encodedfile, char* outfile);
 int encode(char* infile, char* encodedfile);
-node* getTreeFromHist(uint32_t hist[256]);
+
 
 static void usage()
 {
@@ -85,7 +84,7 @@ bool readHistogram(ifstream& f, uint32_t hist[256])
 {
 	bool flag; /* indicates whether 0-byte is in histogram */
 	uint8_t character; 
-	uint32_t charcount;
+	uint8_t charcount;
 
 	f.seekg(0); /* always read histogram from the beginning */
 	if (!f) return false; /* don't bother trying if the file is invalid */
@@ -184,34 +183,6 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 
 		/* if the output is successful, f will still evaluate to true */
 		return (bool)f;
-}
-
-// takes a histogram, makes a heap, then turns the heap into a tree for parsing
-// into a huffman code table
-node* getTreeFromHist(uint32_t hist[256])
-{
-	minheap heap = minheap();
-	node* left;
-	node* right;
-	node* top;
-
-	for (size_t i = 0; i < 256; i++)
-		if (hist[i])
-			heap.insert(hist[i], static_cast<uint8_t>(i));
-
-	while (heap.size() > 1)
-	{
-		left = heap.pop_smallest();
-		right = heap.pop_smallest();
-		top = new node;
-		top->weight = left->weight + right->weight;
-		top->left = left;
-		top->right = right;
-		heap.insert(top);
-	}
-
-	top = heap.pop_smallest();
-	return top;
 }
 
 
@@ -317,7 +288,10 @@ int encode(char* infile, char* encodedfile)
 	else
 		getHuffMapFromTree(map, tree);
 
-	//encoderStats(argv);
+	/** PASS 2: ELECTRIC BOOGALOO **/
+	/* with the map made, read fin again and write the rest of the output */
+	writeHuffman(map, fin, fout);
+
 	return error;
 }
 
@@ -328,6 +302,7 @@ int decode(char* encodedfile, char* outfile)
 	ofstream fout;
 	bool filesOpen = false;
 	uint32_t histogram[256] = {0};
+	node* tree;
 
 	//Open encoded file and decoded file in binary and check open
 	fin.open(encodedfile, ios::in | ios::binary);
@@ -344,9 +319,11 @@ int decode(char* encodedfile, char* outfile)
 		return false;
 	}
 
+	tree = getTreeFromHist(histogram);
 	/* readHistogram will leave fin pointing at the end of the histogram
 	 * so consider working from that point, or make sure you "find" the
 	 * end of the histogram section again */
+	readHuffman(tree, fin, fout);
 	
 	//decoderStats(argv);
 	return true;
