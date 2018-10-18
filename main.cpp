@@ -251,7 +251,7 @@ void decoderStats()
 	
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
 	cout << "-" << endl << "Read " << dStats.numEBytes << " encoded bytes from " << dStats.inputName;
-	cout << "( " << dStats.numOverhead << " bytes including the histogram" << endl << "Wrote";
+	cout << " (" << dStats.numOverhead << " bytes including the histogram)" << endl << "Wrote ";
 	cout << dStats.numBytes << " decoded bytes to " << dStats.outputName << endl << "Compression";
 	cout << " ratio: " << fixed << setprecision(2) << dStats.compressRatio << endl;
 	
@@ -352,10 +352,6 @@ int decode(char* encodedfile, char* outfile)
 	dStats.inputName = encodedfile;
 	dStats.outputName = outfile;
 
-	//Find number of bytes in file
-	fin.seekg(0, fin.end);
-	dStats.numEBytes = fin.tellg();
-	fin.seekg(0, fin.beg);
 
 	if (!readHistogram(fin, histogram))
 	{
@@ -363,6 +359,8 @@ int decode(char* encodedfile, char* outfile)
 		fout.close();
 		return false;
 	}
+
+	auto histogramPosition = fin.tellg();
 
 	tree = getTreeFromHist(histogram);
 	/* readHistogram will leave fin pointing at the end of the histogram
@@ -372,8 +370,14 @@ int decode(char* encodedfile, char* outfile)
 
 	//Find number of bytes including the histogram  in file
 	fout.seekp(0, fout.end);
-	dStats.numOverhead = fout.tellp();
+	dStats.numBytes = fout.tellp();
 	fout.seekp(0, fout.beg);
+
+	//Find number of bytes in file (and excluding histogram)
+	fin.clear();
+	fin.seekg(0, fin.end);
+	dStats.numEBytes = fin.tellg() - histogramPosition;
+	dStats.numOverhead = fin.tellg();
 
 	decoderStats();
 	return true;
