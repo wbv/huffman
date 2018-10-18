@@ -201,9 +201,20 @@ node* getTreeFromHist(uint32_t hist[256])
 	node* right;
 	node* top;
 
+	/* fill the heap with every histogram entry if it's nonzero */
 	for (size_t i = 0; i < 256; i++)
 		if (hist[i])
 			heap.insert(hist[i], static_cast<uint8_t>(i));
+
+	/* special case -- tree has only one node: default to code 0 */
+	if (heap.size() == 1)
+	{
+		top = new node;
+		left = heap.pop_smallest();
+		top->weight = left->weight;
+		top->left = left;
+		return top;
+	}
 
 	while (heap.size() > 1)
 	{

@@ -282,11 +282,7 @@ int encode(char* infile, char* encodedfile)
 	}
 
 	tree = getTreeFromHist(histogram);
-	/* special case -- tree only has one node -- default code: 1 */
-	if (tree->isLeaf())
-		map[tree->ch] = {1, 1};
-	else
-		getHuffMapFromTree(map, tree);
+	getHuffMapFromTree(map, tree);
 
 	/** PASS 2: ELECTRIC BOOGALOO **/
 	/* with the map made, read fin again and write the rest of the output */
