@@ -175,7 +175,7 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 				     << "instances of character '" << (char)character << "'\n";
 				return false;
 			}
-
+			
 			f.write((char*)&character, 1);
 			f.write((char*)codept.encoded, codept.nbytes);
 		}
@@ -210,7 +210,7 @@ void encoderStats()
 		cout << int(myChar) << " " << myChar << setw(25) << setprecision(2) << fixed;
 	        cout << probability << setw(25) <<  huffCode << endl;
 	}
-	
+
 	//Will calculate the compressed size
 	calcCompress(eStats);
 
@@ -230,14 +230,17 @@ void encoderStats()
 
 void decoderStats()
 {
-	int numBytes = 0;
-	double compressRatio = 0.0;
+	//int numBytes = 0;
+	//double compressRatio = 0.0;
 
+	//Will calculate the compressed size
+	calcCompress(dStats);
+	
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
-	cout << "-" << endl << "Read " << numBytes << " encoded bytes from " << dStats.inputName;
-	cout << "( " << numBytes << " bytes including the histogram" << endl << "Wrote";
-	cout << numBytes << " decoded bytes to " << dStats.outputName << endl << "Compression";
-	cout << " ratio: " << fixed << setprecision(2) << compressRatio << endl;
+	cout << "-" << endl << "Read " << dStats.numEBytes << " encoded bytes from " << dStats.inputName;
+	cout << "( " << dStats.Overhead << " bytes including the histogram" << endl << "Wrote";
+	cout << dStats.numBytes << " decoded bytes to " << dStats.outputName << endl << "Compression";
+	cout << " ratio: " << fixed << setprecision(2) << dStats.compressRatio << endl;
 	
 	return;
 }
@@ -295,27 +298,19 @@ int encode(char* infile, char* encodedfile)
 	}
 
 	tree = getTreeFromHist(histogram);
-<<<<<<< HEAD
-	/* special case -- tree only has one node -- default code: 1 */
-	if (tree->isLeaf())
-		map[tree->ch] = {1, 1};
-	else
-		getHuffMapFromTree(map, tree);
-	
+
 	//Find number of bytes including histogram written to file
 	fout.seekp(0, fout.end);
 	eStats.numOverhead = fout.tellp();
 	fout.seekp(0, fin.beg);
 
 	encoderStats();
-=======
 	getHuffMapFromTree(map, tree);
 
 	/** PASS 2: ELECTRIC BOOGALOO **/
 	/* with the map made, read fin again and write the rest of the output */
 	writeHuffman(map, fin, fout);
 
->>>>>>> 93cdae04c7550de54a499da6954ab755a6f53a78
 	return error;
 }
 
@@ -335,11 +330,15 @@ int decode(char* encodedfile, char* outfile)
 	filesOpen = checkOpen(fin, fout);
 	if (!filesOpen)
 		return false;
-
 	
 	//Save input and output file names into dStats struct
 	dStats.inputName = encodedfile;
 	dStats.outputName = outfile;
+
+	//Find number of bytes in file
+	fin.seekg(0, fin.end);
+	dStats.numEBytes = fin.tellg();
+	fin.seekg(0, fin.beg);
 
 	if (!readHistogram(fin, histogram))
 	{
@@ -353,7 +352,12 @@ int decode(char* encodedfile, char* outfile)
 	 * so consider working from that point, or make sure you "find" the
 	 * end of the histogram section again */
 	readHuffman(tree, fin, fout);
-	
+
+	//Find number of bytes including the histogram  in file
+	fout.seekp(0, fout.end);
+	dStats.numOverhead = fout.tellp();
+	fout.seekp(0, fout.beg);
+
 	decoderStats();
 	return true;
 }
