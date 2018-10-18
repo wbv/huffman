@@ -40,7 +40,7 @@ void minheap::insert(node* n)
 
 	/* if the node passed in wasn't from the "empty spot" on the array stack */
 	/* then clean up its memory footprint from the heap */
-	if (n != &array[0])
+	if (n != array)
 		delete n;
 }
 
@@ -50,7 +50,7 @@ void minheap::insert(uint32_t freq, uint8_t ch)
 	array[0].ch = ch;
 	array[0].left = nullptr;
 	array[0].right = nullptr;
-	insert(&array[0]);
+	insert(array);
 }
 
 node* minheap::pop_smallest()
