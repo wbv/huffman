@@ -55,6 +55,22 @@ int main(int argc, char** argv)
 	return (int)-1;
 }
 
+/***************************************************************************//**
+ * @author Haley Linnig
+ *
+ * @par Description:
+ * This function will take in an input file and an output file
+ * and check that each file opens correctly. If the files open correctly, then
+ * the function will return true. If they do not, then the function will print
+ * out an error message, close the files, and return false.
+ *
+ * @param[in] fin - Input file from argv
+ * @param[in] fout - Output file from argv
+ *
+ * @returns true - If function can open files
+ * @returns false - If function can't open files
+ *
+ ******************************************************************************/
 
 //Check that the input and output files opened correctly
 // true = success, false = failure
@@ -189,22 +205,43 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 		return (bool)f;
 }
 
+/***************************************************************************//**
+ * @author Haley Linnig
+ *
+ * @par Description:
+ * This function will print out the encoder statistics. The statistics consist
+ * of name of input file and its size, the number of code words in the input
+ * file, and will print out a table of all the code words with their probability,
+ * values, and huff code. This will be done by updating the struct eStats when
+ * the information is available throughout the program. In the table of code 
+ * words, only printable code words will be printed.
+ *
+ * The statistics also consist of the number of encoded bytes, the file they 
+ * will be saved to, the total number of bytes that will be written to the output
+ * file, average bits per symbol, compression rate and entropy. These values
+ * will also be retrieved by updating the struct eStats when the information
+ * is available within the program.
+ * 
+ * @param[in] hist - Array that holds the histogram
+ * @param[in] huffmap - Map that holds huff codes
+ *
+ * @returns none
+ *
+ ******************************************************************************/
 
 void encoderStats(uint32_t hist[256], huffcode_t huffmap[256])
 {
-	//Need to put real value in, maybe pass file?
-	//How are we going to access values
 	uint32_t charFreq;
-	double probability = 0.0;//, compressRatio = 0.0, entropy = 0.0, avgBit = 0.0;
-	//double codingEff = 0.0;
+	double probability = 0.0;
 	huffcode_t huffCode;
 
+	//Print out encode statistics using eStats struct for encoder pass 1
 	cout << endl << "Huffman Encoder Pass 1" << endl << setfill ('-') << setw(22);
         cout << "-" << endl << "Read " << eStats.numBytes << " from " << eStats.inputName;
         cout <<", found " << eStats.numCodeWords << " code words" << endl << endl;
         cout << "Huffman Code Table" << endl << setfill ('-') << setw(18) << "-";
 	cout << endl << "ASCII Code " << setfill (' ') << setw(25) << "Probablility (%) ";
-	cout << setw(20) << " Huffman Code" << endl;
+	cout << setw(23) << " Huffman Code" << endl;
 
 	//For all code words, print out ASCII code, probability and Huffman Code
 	for(int ch = 0; ch < 256; ch++)
@@ -214,46 +251,64 @@ void encoderStats(uint32_t hist[256], huffcode_t huffmap[256])
 			continue;
 
 		huffCode = huffmap[ch];	
-
 		probability = 100.0 * (double)charFreq / (double)eStats.numBytes;
-		cout << ch << " ( " << (char)ch << " )"
-		     <<  setw(25) << setprecision(2) << fixed << probability;
-	    cout << setw(25) << huffcodeToString(huffCode) << endl;
+	
+		cout << right  << setw(3) <<  ch << "  ( ";	
+		
+		//Only print out printable characters
+		if(ch <= 37 || ch > 126)
+			cout << " ";
+		else
+			cout << char(ch);
 
+		cout << " )" << right <<  setw(20) << setprecision(2) << fixed << probability;
+		cout << right << setw(29) << huffcodeToString(huffCode) << endl;
+
+		//Call calcEntropy and calcAvg and sum them as for loop continues
 		eStats.entropy += calcEntropy(probability);
 		eStats.avgBit += calcAvg(probability, huffCode.bitcnt);
 	}
 
-	//Will calculate the compressed size
+	//Will calculate the compressed size and update struct 
 	calcCompress(eStats);
 
+	//Print out encoder stats using eStats struct for encoder pass 2
 	cout << endl << "Huffman Encoder Pass 2" << endl << setfill ('-') << setw(22) << "-";
 	cout << endl <<  "Wrote " << eStats.numEBytes << " encoded bytes to " << eStats.outputName << " ( ";
-	cout << eStats.numOverhead << " bytes including histogram)" << endl << endl;
+	cout << eStats.numOverhead << "bytes including histogram)" << endl << endl;
 
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(25);
 	cout << "-" << endl << "Compression ratio = " << fixed << setprecision(2);
 	cout << eStats.compressRatio << "% " << endl << "Entropy = " << eStats.entropy << endl; 
 	cout << "Average bits per symbol in Huffman coding = " << eStats.avgBit << endl;
-       	cout << "Coding efficiency = " << eStats.codingEff << "%" << endl;
 
 	return;
 }
 
+/***************************************************************************//**
+ * @author Haley Linnig
+ *
+ * @par Description:
+ * This function will print out the decoder statistics. These statistics consist
+ * of the number of encoded bytes and total number of bytes within the input 
+ * file, the number of decoded bytes written to an output file, and the 
+ * compression ratio.
+ *
+ * @returns none
+ *
+ ******************************************************************************/
 
 void decoderStats()
 {
-	//int numBytes = 0;
-	//double compressRatio = 0.0;
-
 	//Will calculate the compressed size
 	calcCompress(dStats);
 	
+	//Print out decoder stats using dStats struct
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(22);
 	cout << "-" << endl << "Read " << dStats.numEBytes << " encoded bytes from " << dStats.inputName;
 	cout << " (" << dStats.numOverhead << " bytes including the histogram)" << endl << "Wrote ";
 	cout << dStats.numBytes << " decoded bytes to " << dStats.outputName << endl << "Compression";
-	cout << " ratio: " << fixed << setprecision(2) << dStats.compressRatio << endl;
+	cout << " ratio: " << fixed << setprecision(2) << dStats.compressRatio << "%" <<  endl;
 	
 	return;
 }
