@@ -12,12 +12,6 @@ void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint16_t bi
 	{
 		map[root->ch].bitcnt = bitcnt;
 		map[root->ch].bits = bits;
-//#ifdef _DEBUG
-//		std::cout << root->ch << " : ";
-//		for (int i = 0; i < bitcnt; i++)
-//			std::cout << (((bits >> (bitcnt - i - 1)) & 1) ? '1' : '0');
-//		std::cout << std::endl;
-//#endif
 		return;
 	}
 
@@ -33,6 +27,18 @@ void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint16_t bi
 	return;
 }
 
+// recursive function that will clean up the huffman code tree structure after
+// you're done with it.
+void cleanTree(node* n)
+{
+	if (n == nullptr)
+		return;
+
+	cleanTree(n->left);
+	cleanTree(n->right);
+
+	delete n;
+}
 
 // given an array which maps bytes to huffman codes, read from fin (start at 0)
 // and write out to fout (starting where it was left at)

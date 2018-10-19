@@ -21,6 +21,10 @@ struct huffcode_t {
 // into a huffman code table
 node* getTreeFromHist(uint32_t hist[256]);
 
+// recursive function that will clean up the huffman code tree structure after
+// you're done with it.
+void cleanTree(node* n);
+
 // fills the supplied huffmap from a tree, returns false on failure
 void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bits = 0, uint16_t bitcnt = 0);
 
