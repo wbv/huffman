@@ -328,6 +328,8 @@ int encode(char* infile, char* encodedfile)
 
 	encoderStats(histogram, map);
 
+	cleanTree(tree);
+
 	return error;
 }
 
@@ -380,6 +382,8 @@ int decode(char* encodedfile, char* outfile)
 	dStats.numOverhead = fin.tellg();
 
 	decoderStats();
+
+	cleanTree(tree);
 	return true;
 }
 
