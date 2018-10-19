@@ -4,10 +4,21 @@
 
 using namespace std;
 
+/***************************************************************************//**
+ * @author Haley Linnig
+ *
+ * @par Description:
+ * This struct holds information for statistics. It is initialized for eStats and
+ * dStats. It will hold the number of bytes, number of encoded bytes, number of
+ * total bytes including the histogram, name of input file, name of output file,
+ * the compression ratio, entropy, and the average bits per symbols. 
+ *
+ ******************************************************************************/
+
 struct stats {
 	int numBytes = 0, numCodeWords = 0, numEBytes = 0, numOverhead = 0;
 	string inputName, outputName;
-	double compressRatio = 0.0, entropy = 0.0, avgBit = 0.0, codingEff = 0.0;
+	double compressRatio = 0.0, entropy = 0.0, avgBit = 0.0;
 	
 } eStats, dStats;
 
