@@ -401,7 +401,7 @@ int decode(char* encodedfile, char* outfile)
 
 	filesOpen = checkOpen(fin, fout);
 	if (!filesOpen)
-		return false;
+		return 5;
 	
 	//Save input and output file names into dStats struct
 	dStats.inputName = encodedfile;
@@ -412,7 +412,7 @@ int decode(char* encodedfile, char* outfile)
 	{
 		fin.close();
 		fout.close();
-		return false;
+		return 6;
 	}
 
 	auto histogramPosition = fin.tellg();
@@ -435,7 +435,7 @@ int decode(char* encodedfile, char* outfile)
 	dStats.numOverhead = fin.tellg();
 
 	decoderStats();
-	return true;
+	return 0;
 }
 
 
