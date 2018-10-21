@@ -5,6 +5,7 @@
 using namespace std;
 
 /***************************************************************************//**
+ * @struct stats
  * @author Haley Linnig
  *
  * @par Description:
@@ -12,13 +13,21 @@ using namespace std;
  * dStats. It will hold the number of bytes, number of encoded bytes, number of
  * total bytes including the histogram, name of input file, name of output file,
  * the compression ratio, entropy, and the average bits per symbols. 
- *
+ * 
  ******************************************************************************/
 
 struct stats {
-	int numBytes = 0, numCodeWords = 0, numEBytes = 0, numOverhead = 0;
-	string inputName, outputName;
-	double compressRatio = 0.0, entropy = 0.0, avgBit = 0.0;
+	int numBytes = 0; /**< numBytes - Number of bytes within the given file*/
+	int numCodeWords = 0; /**<  numCodeWords - Number of code words */
+        int numEBytes = 0; /**< numEBytes - Number of encoded bytes */
+        int numOverhead = 0; /**< numOverhead - Number of encoded bytes with the histogram*/
+	string inputName; /**< inputName - Name of the input file */
+	string outputName; /**< outputName - Name of the output file */
+	double compressRatio = 0.0; /**< compressRatio - Variable to hold ratio of the 
+				      *program's compression */
+        double entropy = 0.0; /**<  Variable to hold entropy value */
+        double avgBit = 0.0; /**< Variable to hold average bits per symbol */
+
 	
 } eStats, dStats;
 
