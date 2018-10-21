@@ -111,7 +111,7 @@ Byte:  0           1
 Bit:   7654 3210   7654 3210
 ```
 
-Reference implementation, example codes (in order) 0, 111, 0, 111:
+Reference implementation, example codes (in order) 0, 11111, 0, 11111:
 ```
 ---------------------------------
      | 0111 1101 | 1111 ....
