@@ -6,7 +6,7 @@ CSC 315 -- Section 2 -- Fall 2018
 	Haley Linnig, Walter Vaughan    
 
 **Date:**
-	2018-10-15 (tentative)
+	2018-10-21
 
 **Professor:**
 	Dr. Larry Pyeatt
@@ -72,6 +72,75 @@ between the bounds of Hex Min and Hex Max.
 The byte-frequency pairs are stored in ascending order of frequency, to aid
 building the code tree.
 
+## Algorithm for Huffman Code Computation
+
+After the histogram is built, characters are added to a statically-allocated
+minheap and ordered on their frequency. The minheap is custom-built for this
+application, designed around the `node` type which is also used to form the
+Huffman code tree.
+
+Once the heap is populated with all nonzero entries, the tree is formed by
+repeatedly removing the smallest two nodes, forming an artificial new node with
+the combined weights of two removed nodes, setting new node's left child to the
+smallest removed node, and the right child to the other removed node. This new
+node, which forms a binary search tree, is pushed back into the heap. The
+process repeats until two nodes remain in the heap, at which point the final new
+node is formed and becomes the root of the Huffman code tree.
+
+All byte combinations now appear in the tree as leaves, and the tree is sorted
+on byte frequency. An array (indexed by a byte, which can be thought of as a
+lookup-table) which is referred to as a "map" (from a byte to a Huffman code) is
+computed by traversing the entirety of the tree. A Huffman code starts empty at
+the root, then a left traversal appends a 0 and a right traversal appends a 1 to
+that code. Once a leaf is reached, the Huffman code at that node is saved in the
+map for quick lookup later.
+
+## Encoded File Format
+
+After the histogram (and its terminating null byte) in the encoded file, the
+Huffman code corresponding to each byte in the input file is appended, starting
+from bit 0. This differs from the reference implementation wherein codes are
+stored starting from bit 7, going down to bit 0, until the next byte:
+
+This implementation, example codes (in order) 0, 11111, 0, 11111:
+```
+---------------------------------
+     | 1011 1110 | .... 1111
+-----------------------------------
+Byte:  0           1
+Bit:   7654 3210   7654 3210
+```
+
+Reference implementation, example codes (in order) 0, 111, 0, 111:
+```
+---------------------------------
+     | 0111 1101 | 1111 ....
+-----------------------------------
+Byte:  0           1
+Bit:   7654 3210   7654 3210
+```
+
+
+Once all the input bytes have been translated out, the byte containing that last
+Huffman code is filled with zeros until (and if not already) full, and that
+number of zeros is stored in a following, final byte. This means that the
+decoder doesn't ambiguously interpret 0-valued Huffman codes from any trailing
+zero bits.
+
+
+## Decoding
+
+For the decoding step, the tree made in the encoding step is recreated from the
+histogram at the beginning of the encoding file, and then the translation from
+encoded file to decoded file is done by traversing the tree in accordance with
+each bit of input. Once a leaf is found, that leaf's byte value is recorded in
+the output file, and reading of the encoded file continues at the next bit, and
+traversal restarts at the root of the Huffman code tree.
+
+Once the final byte is read in, it is interpreted as the number of trailing
+bits, and the buffer is truncated by that number.
+
+
 ## Building
 `make`
 
@@ -83,9 +152,7 @@ building the code tree.
 
 
 ## Known Bugs
- - Doesn't actually encode a file, just builds the histogram structure and the
-   huffman code table in memory.
- - Decode does nothing to the output file, yet.
+ - Input files which form a Huffman code longer than 2 bytes are not supported
 
 Revision History
 ================
