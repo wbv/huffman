@@ -17,6 +17,12 @@ void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint16_t bi
 
 	/* recursively calculate code for left and right subtrees */
 	bitcnt++;   /* add another bit */
+	if (bitcnt > 16) /* verify Huffman code is an acceptable length */
+	{
+		cerr << "Error: Huffman code longer than 16 bits encountered. The"
+		        "encoded file will be corrupted.\n";
+	}
+
 	bits <<= 1; /* that bit is 0   */
 	getHuffMapFromTree(map, root->left, bitcnt, bits);
 	bits |= 1;  /* now it's 1      */

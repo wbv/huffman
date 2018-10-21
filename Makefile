@@ -1,4 +1,5 @@
-DEBUGFLAGS=-g -D_DEBUG
+#DEBUGFLAGS=-g -D_DEBUG
+DEBUGFLAGS=
 CPPFLAGS=$(DEBUGFLAGS) -Wall -pedantic -std=c++14
 OBJS=main.o minheap.o utf8.o huffcode.o
 

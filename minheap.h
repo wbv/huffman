@@ -1,6 +1,8 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
 
+#include <cstddef>
+
 #include "node.h"
 
 /* min-heap of static size, holding a weight and associated character */

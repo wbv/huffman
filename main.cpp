@@ -189,8 +189,8 @@ bool writeHistogram(ofstream& f, uint32_t hist[256])
 
 			if (codept.nbytes == 0) /* invalid codept */
 			{
-				cerr << "Error: cannot count more than 2^31 " 
-				     << "instances of character '" << (char)character << "'\n";
+				cerr << "Error: cannot count more than (2^31 - 1) "
+				     << "instances of byte '" << (int)character << "'\n";
 				return false;
 			}
 			
