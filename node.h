@@ -5,6 +5,8 @@
 using std::uint32_t;
 using std::uint8_t;
 
+/// huffman code tree building block
+///
 /// Nodes form the data structure for the huffman code tree. They are either
 /// leafs (indicated by `isLeaf()`) or they carry pointers to left AND right
 /// subchildren. If they are leafs, `ch` corresponds to a unique byte who
@@ -17,24 +19,36 @@ using std::uint8_t;
 /// corresponding to the leaf's `ch`.
 struct node
 {
+	/// pointer to child of the current node
+	///
 	/// `left` and `right` are pointers to children. If left is valid, then
 	/// right should also point to a valid child. If both are nullptr, then this
 	/// node is a leaf, and `ch` will be a unique byte among the set of leaves.
 	node* left;
-	/// see documentation for `left`
+	/// pointer to child of the current node
+	///
+	/// `left` and `right` are pointers to children. If left is valid, then
+	/// right should also point to a valid child. If both are nullptr, then this
+	/// node is a leaf, and `ch` will be a unique byte among the set of leaves.
 	node* right;
 
+	/// number of times `ch` appears in a file OR the combined weight of children
+	///
 	/// `weight` refers to the frequency of a character if the node is a leaf,
 	/// or the combined weights of the subtrees in the left and right subtrees.
 	/// In turn, each node's weight corresponds to the total frequency of all of
 	/// the characters in the subtrees below.
 	uint32_t weight;
 
+	/// a byte which appears in a source file
+	///
 	/// If the node is a leaf, `ch` is a byte, and its location in the tree
 	/// (from the desription of a node) forms its corresponding huffman code.
 	/// If this node is not a leaf, then `ch` has no meaning.
 	uint8_t ch;
 
+	/// Indicates whether this node is a leaf in its tree or an interior node
+	///
 	/// Indicates whether this node is a leaf in its tree or an interior node
 	bool isLeaf() { return (left == nullptr) and (right == nullptr); }
 };

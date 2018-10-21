@@ -5,10 +5,6 @@
 #include "minheap.h"
 
 
-minheap::~minheap()
-{
-}
-
 minheap::minheap()
 {
 	pos = 0;
