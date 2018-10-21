@@ -1,3 +1,7 @@
+/// \file node.h
+/// \brief defines the node used in the Huffman code tree and heap
+
+
 #ifndef NODE_H
 #define NODE_H
 
@@ -5,7 +9,7 @@
 using std::uint32_t;
 using std::uint8_t;
 
-/// huffman code tree building block
+/// \brief huffman code tree building block
 ///
 /// Nodes form the data structure for the huffman code tree. They are either
 /// leafs (indicated by `isLeaf()`) or they carry pointers to left AND right
@@ -19,20 +23,20 @@ using std::uint8_t;
 /// corresponding to the leaf's `ch`.
 struct node
 {
-	/// pointer to child of the current node
+	/// \brief pointer to child of the current node
 	///
 	/// `left` and `right` are pointers to children. If left is valid, then
 	/// right should also point to a valid child. If both are nullptr, then this
 	/// node is a leaf, and `ch` will be a unique byte among the set of leaves.
 	node* left;
-	/// pointer to child of the current node
+	/// \brief pointer to child of the current node
 	///
 	/// `left` and `right` are pointers to children. If left is valid, then
 	/// right should also point to a valid child. If both are nullptr, then this
 	/// node is a leaf, and `ch` will be a unique byte among the set of leaves.
 	node* right;
 
-	/// number of times `ch` appears in a file OR the combined weight of children
+	/// \brief number of times `ch` appears in a file OR the combined weight of children
 	///
 	/// `weight` refers to the frequency of a character if the node is a leaf,
 	/// or the combined weights of the subtrees in the left and right subtrees.
@@ -40,14 +44,14 @@ struct node
 	/// the characters in the subtrees below.
 	uint32_t weight;
 
-	/// a byte which appears in a source file
+	/// \brief a byte which appears in a source file
 	///
 	/// If the node is a leaf, `ch` is a byte, and its location in the tree
 	/// (from the desription of a node) forms its corresponding huffman code.
 	/// If this node is not a leaf, then `ch` has no meaning.
 	uint8_t ch;
 
-	/// Indicates whether this node is a leaf in its tree or an interior node
+	/// \brief batman-syndrome-identifier
 	///
 	/// Indicates whether this node is a leaf in its tree or an interior node
 	bool isLeaf() { return (left == nullptr) and (right == nullptr); }
