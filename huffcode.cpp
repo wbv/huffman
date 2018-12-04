@@ -56,7 +56,7 @@ void writeHuffman(huffcode_t huffmap[256], ifstream& fin, ofstream& fout)
 	/* worst case, 12 bits written at a time, so 32bits is large enough */
 	uint8_t buffer[4] = {0};
 	/* keeps track of the number of bits shifted into buffer */
-	size_t bufferedbits = 0;
+	int bufferedbits = 0;
 
 
 	/* restart the reading of fin, clearing any flags before doing so */
@@ -130,7 +130,7 @@ void readHuffman(node* root, ifstream& fin, ofstream& fout)
 	/* buffers the huffman codes read in in byte-sized chunks at a time */
 	uint8_t buffer[4] = {0};
 	/* counts how many bits are in the buffer */
-	size_t bufferedbits;
+	int bufferedbits;
 	/* used for traversing the code tree */
 	node* traverse = root;
 	/* indicates when terminating byte is found */

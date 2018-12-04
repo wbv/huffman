@@ -1,6 +1,6 @@
 #DEBUGFLAGS=-g -D_DEBUG
-DEBUGFLAGS=
-CPPFLAGS=$(DEBUGFLAGS) -Wall -pedantic -std=c++14
+DEBUGFLAGS=-O2
+CPPFLAGS=$(DEBUGFLAGS) -Wall -Wno-strict-aliasing -pedantic -std=c++14
 OBJS=main.o minheap.o utf8.o huffcode.o
 
 all: huffman
