@@ -15,15 +15,17 @@
 #include "node.h"
 
 using std::uint8_t;
-using std::uint16_t;
 using std::uint32_t;
+using std::uint64_t;
+typedef unsigned __int128 uint128_t;
 using std::ifstream;
 using std::ofstream;
 
-/// \brief represents a single Huffman code point, up to 16 bits long
+/// \brief represents a single Huffman code point, up to 128 bits long
 ///
-/// represents a single Huffman code point, up to 16 bits long
-struct huffcode_t {
+/// represents a single Huffman code point, up to 128 bits long
+struct huffcode_t
+{
 	/// \brief indicates how many bits are in the code
 	///
 	/// indicates how many bits are in the code
@@ -33,7 +35,8 @@ struct huffcode_t {
 	/// contains the bits actually in the Huffman code point.
 	/// The first bit of the huffman code is stored most significant, and the
 	/// last bit in the least significant bit of `bits`.
-	uint16_t bits; };
+	uint128_t bits;
+};
 
 /// \brief turns a histogram into its corresponding huffman code tree
 ///
@@ -51,7 +54,7 @@ void cleanTree(node* n);
 ///
 /// fills the supplied huffmap from a tree,
 /// returns false on failure. the map is an array that gives O(1) lookup to 
-void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bits = 0, uint16_t bitcnt = 0);
+void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bits = 0, uint128_t bitcnt = 0);
 
 /// \brief use `huffmap` to translates bytes of `fin` to codes in `fout`
 ///

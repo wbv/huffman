@@ -274,8 +274,8 @@ void encoderStats(uint32_t hist[256], huffcode_t huffmap[256])
 
 	//Print out encoder stats using eStats struct for encoder pass 2
 	cout << endl << "Huffman Encoder Pass 2" << endl << setfill ('-') << setw(22) << "-";
-	cout << endl <<  "Wrote " << eStats.numEBytes << " encoded bytes to " << eStats.outputName << " ( ";
-	cout << eStats.numOverhead << "bytes including histogram)" << endl << endl;
+	cout << endl <<  "Wrote " << eStats.numEBytes << " encoded bytes to " << eStats.outputName << " (";
+	cout << eStats.numOverhead << " bytes including histogram)" << endl << endl;
 
 	cout << endl << "Huffman Coding Statistics" << endl << setfill ('-') << setw(25);
 	cout << "-" << endl << "Compression ratio = " << fixed << setprecision(2);

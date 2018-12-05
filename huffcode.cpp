@@ -5,8 +5,10 @@ using std::cerr;
 #include "huffcode.h"
 #include "node.h"
 
+#define BUFSIZE (256/8)
 
-void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint16_t bits)
+
+void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint128_t bits)
 {
 	if (root->isLeaf())
 	{
@@ -17,11 +19,6 @@ void getHuffMapFromTree(huffcode_t* map, node* root, uint8_t bitcnt, uint16_t bi
 
 	/* recursively calculate code for left and right subtrees */
 	bitcnt++;   /* add another bit */
-	if (bitcnt > 16) /* verify Huffman code is an acceptable length */
-	{
-		cerr << "Error: Huffman code longer than 16 bits encountered. The"
-		        "encoded file will be corrupted.\n";
-	}
 
 	bits <<= 1; /* that bit is 0   */
 	getHuffMapFromTree(map, root->left, bitcnt, bits);
@@ -53,8 +50,7 @@ void writeHuffman(huffcode_t huffmap[256], ifstream& fin, ofstream& fout)
 	/* stores a byte read in from infile */
 	uint8_t inputbyte;
 	/* buffers the huffman codes until a byte can be written */
-	/* worst case, 12 bits written at a time, so 32bits is large enough */
-	uint8_t buffer[4] = {0};
+	uint8_t buffer[BUFSIZE] = {0};
 	/* keeps track of the number of bits shifted into buffer */
 	int bufferedbits = 0;
 
@@ -75,11 +71,13 @@ void writeHuffman(huffcode_t huffmap[256], ifstream& fin, ofstream& fout)
 	{
 		/* shift in the bits for the byte's huffman code, */
 		/* one at a time, from left to right */
-		uint16_t bits = huffmap[inputbyte].bits;
+		uint128_t bits = huffmap[inputbyte].bits;
 		uint8_t bitcnt = huffmap[inputbyte].bitcnt;
 		for (int i = bitcnt - 1; i >= 0; i--)
 		{
-			*(uint32_t*)buffer |= ((bits >> i) & 0x1) << bufferedbits;
+			size_t bufpos = bufferedbits / 8;
+			size_t bitpos = bufferedbits % 8;
+			buffer[bufpos] |= ((bits >> i) & 0x1) << bitpos;
 			bufferedbits++;
 		}
 
@@ -88,7 +86,8 @@ void writeHuffman(huffcode_t huffmap[256], ifstream& fin, ofstream& fout)
 		while (bufferedbits >= 8)
 		{
 			fout.put(buffer[0]);
-			*(uint32_t*)buffer >>= 8;
+			for (int i = 0; i < (BUFSIZE-1); i++)
+				buffer[i] = buffer[i+1];
 			bufferedbits -= 8;
 		}
 
@@ -128,7 +127,7 @@ void readHuffman(node* root, ifstream& fin, ofstream& fout)
 	/* stores a byte read in from infile, nextbyte stores the next one read */
 	uint8_t inputbyte, nextbyte;
 	/* buffers the huffman codes read in in byte-sized chunks at a time */
-	uint8_t buffer[4] = {0};
+	uint8_t buffer[BUFSIZE] = {0};
 	/* counts how many bits are in the buffer */
 	int bufferedbits;
 	/* used for traversing the code tree */
@@ -174,22 +173,33 @@ void readHuffman(node* root, ifstream& fin, ofstream& fout)
 		/* trailing bits (terminating byte), so add it to the buffer */
 		else
 		{
-			*(uint32_t*)buffer |= inputbyte << bufferedbits;
+			for (size_t i = 0; i < 8; i++)
+			{
+				size_t bufpos = (bufferedbits) / 8;
+				size_t bitpos = (bufferedbits) % 8;
+				buffer[bufpos] |= ((inputbyte >> i) & 0x1) << bitpos;
+				bufferedbits++;
+			}
 			inputbyte = nextbyte;
-			bufferedbits += 8;
 		}
 
-		/* maintain at least 16 bits in buffer so tree traversal can make */
+		/* maintain at least 128 bits in buffer so tree traversal can make */
 		/* it from the root to the furthest leaf, unless we hit the end,  */
 		/* in which case just read 'til the buffer's empty */
-		while ((bufferedbits > (lastrun ? 0 : 15)) and fout)
+		while ((bufferedbits > (lastrun ? 0 : 127)) and fout)
 		{
 			/* read a bit and traverse the tree in that dir, stopping once */
 			/* a leaf is found */
 			while (not traverse->isLeaf())
 			{
 				uint8_t bit = buffer[0] & 1;
-				*(uint32_t*)buffer >>= 1;
+				/* shift buffer down by a bit, 1 byte of buffer at a time */
+				for (int i = 0; i < BUFSIZE; i++)
+				{
+					uint8_t carrybit = (i == (BUFSIZE-1) ? 0 : buffer[i+1] & 1);
+					buffer[i] >>= 1;
+					buffer[i] |= (carrybit << 7);
+				}
 				bufferedbits--;
 				if (bit == 1)
 					traverse = traverse->right;

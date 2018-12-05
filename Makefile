@@ -1,6 +1,6 @@
 #DEBUGFLAGS=-g -D_DEBUG
 DEBUGFLAGS=-O2
-CPPFLAGS=$(DEBUGFLAGS) -Wall -Wno-strict-aliasing -pedantic -std=c++14
+CPPFLAGS=$(DEBUGFLAGS) -Wall -Wno-strict-aliasing -std=gnu++14
 OBJS=main.o minheap.o utf8.o huffcode.o
 
 all: huffman
@@ -33,4 +33,4 @@ test: huffman
 	./huffman -e testtext testtext.z
 	./huffman -d testtext.z testtext2
 	echo "diff of files:"
-	diff testtext testtext2
+	diff -y --suppress-common-lines testtext testtext2
