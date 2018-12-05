@@ -152,7 +152,6 @@ bits, and the buffer is truncated by that number.
 
 
 ## Known Bugs
- - Files which form a Huffman code longer than 2 bytes are not supported
  - Files with more than (2^31 - 1) of the same byte cannot be encode
 
 Revision History
