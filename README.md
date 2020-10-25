@@ -1,7 +1,4 @@
-CSC 315 -- Section 2 -- Fall 2018
-=================================
-
-## Course Information
+## Project Information
 **Authors:**
 	Haley Linnig, Walter Vaughan    
 
@@ -157,4 +154,4 @@ bits, and the buffer is truncated by that number.
 Revision History
 ================
 See [the git
-history](https://gitlab.mcs.sdsmt.edu/7385302/csc315_fall2018_project1/commits/master).
+history](https://github.com/wbv/huffman/commits/main).
